@@ -1,0 +1,71 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{appendix}
+\usepackage{color}
+\usepackage{palatino}
+\usepackage{changepage}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{csquotes}
+\usepackage{verbatim}
+\usepackage{minted}
+
+\usemintedstyle{fruity}
+
+\title{}
+\author{Carlos Requena López}
+
+%% Fancy layout
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{}
+\cfoot{}
+\rfoot{Page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+
+%%% --- %%% --- DOCUMENT START --- %%% --- %%%
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\tableofcontents
+\newpage
+%%% Counting pages now %%%
+\pagestyle{fancy}
+\setcounter{page}{1}
+
+
+\section{Introduction}
+
+\section{Analysis and expectations}
+
+\section{Implementation}
+
+\section{Results}
+
+\section{Conclusion}
+
+% \begin{figure}[ht!]
+%   \centering
+%   \includegraphics[width=1\textwidth]{some_graphic.png}
+%   \caption{}
+%   \label{fig:fig1}
+% \end{figure}
+
+\appendix
+\section{Appendix - code listing}
+
+\begin{minted}{clojure}
+\end{minted}
+
+\end{document}
