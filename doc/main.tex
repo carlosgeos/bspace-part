@@ -16,15 +16,16 @@
 \usepackage{csquotes}
 \usepackage{verbatim}
 \usepackage{minted}
+\usepackage[ruled,vlined]{algorithm2e}
 
 \usemintedstyle{fruity}
 
-\title{}
+\title{Binary Space Partitions}
 \author{Carlos Requena López}
 
 %% Fancy layout
 \pagestyle{fancy}
-\lhead{}
+\lhead{Binary Space Partitions}
 \chead{}
 \rhead{}
 \lfoot{}
@@ -47,9 +48,89 @@
 
 \section{Introduction}
 
+This first assignment deals with recursive autopartitioning of a two
+dimensional space. Autopartitions, in contrast to partitions, are
+performed extending the supporting lines of the segments already
+present on the plane.
+
+In particular, with partitions in general, we stop executing the
+algorithm when there is
+
+Having direct application in computer graphics, the most interesting
+parameter when considering these partitions in the size of the
+generated tree, since that's what is used in practice to decide what
+to render first in the scene of a computer screen.
+
 \section{Analysis and expectations}
 
+We define the algorithm RandAutopart in \ref{algo}
+
+\begin{algorithm}[h]
+  \SetAlgoLined
+  \KwIn{A set S of segments}
+  \KwOut{The autopartition binary tree}
+
+  \nl Pick a random permutation of S and take the first element\;
+  \nl Create a node with this element in the tree.
+\item
+  \nl \While{there is a partition with at least 1 segment}{
+
+  };
+  \nl
+\caption{\bf RandAutopart}
+\label{algo}
+
+\end{algorithm}
+
+The upper bound found in literature \cite{Motwani:1995:RA:211390},
+corresponds to the upper bound of the random algorithm for any
+input. The expectation would be for this boundary to be closer when
+choosing the worst possible input (segment positioning wise) and
+further away when adding randomness to the input and even more when
+giving the the most trivial input possible: parallel segments, in
+which case the number of partitions would be $n+1$.
+
+The algorithm will be therefore tested with a random input and a
+crafted, ``evil'' input, to try and get close to this upper bound
+without ever exceeding it.
+
 \section{Implementation}
+
+$n$ disjoint segments are generated and placed on a $H\times W$
+canvas, where $H$ is the height and $W$ the width, both in pixels.
+
+The first element of a random permutation of those $N$ segments is
+taken, its supporting line extended, and the host space (the plane)
+partitioned in two. The same procedure is applied recursively to
+
+In order to know which segments another line intersects, some
+primitive geometry operations have to be implemented. Since this is
+done from scratch however, we expect them to not be as robust as the
+ones some external library could provide. These operations include:
+
+\begin{itemize}
+\item Testing to which side a point is with respect to a line segment
+  (of if it is on the line).
+\item Testing whether a segment is on one side or the other of a
+  segment (or if it is colinear).
+\item Testing whether a segment could potentially intersect another if
+  its supporting line is extended.
+\item Testing whether two segments intersect each other.
+\item Determining the coordinates of the intersection of a line and a
+  segment.
+\end{itemize}
+
+Most operations rely of calculating the orientation determinant for
+the line segment defined by two points and a third.
+
+The generated segments' coordinates are integers to begin with and
+Clojure uses a \texttt{Ratio} type to make arithmetic calculations as
+exact as possible at the expense of performance, which is not an
+issue.
+
+Nonetheless, for the sake of simplicity and to avoid clutter, this
+implementation is not exempt of errors that could arise due to
+degenerate or special cases though.
 
 \section{Results}
 
@@ -67,5 +148,9 @@
 
 \begin{minted}{clojure}
 \end{minted}
+
+\nocite{*}
+\bibliographystyle{plain}
+\bibliography{refs}
 
 \end{document}
