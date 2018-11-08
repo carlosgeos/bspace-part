@@ -1,7 +1,6 @@
 # Binary space partitioning
 
-![Quil output]( )
-
+![Quil output](doc/img/bad-input2000.png)
 
 ## Usage
 
