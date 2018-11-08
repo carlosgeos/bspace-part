@@ -16,41 +16,14 @@
 \usepackage{csquotes}
 \usepackage{verbatim}
 \usepackage{minted}
-\usepackage{listings}
 \usepackage[ruled,vlined]{algorithm2e}
 
-\usemintedstyle{fruity}
-
-\definecolor{mygreen}{rgb}{0,0.6,0}
-\definecolor{mygray}{rgb}{0.5,0.5,0.5}
-\definecolor{mymauve}{rgb}{0.58,0,0.82}
-
-\lstset{
-  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}; should come as last argument
-  basicstyle=\ttfamily,        % the size of the fonts that are used for the code
-  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
-  breaklines=true,                 % sets automatic line breaking
-  captionpos=b,                    % sets the caption-position to bottom
-  commentstyle=\color{mygreen},    % comment style
-  deletekeywords={...},            % if you want to delete keywords from the given language
-  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
-  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
-  frame=single,                    % adds a frame around the code
-  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
-  keywordstyle=\color{blue},       % keyword style
-  %language=Octave,                 % the language of the code
-  morekeywords={*,...},            % if you want to add more keywords to the set
-  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
-  numbersep=5pt,                   % how far the line-numbers are from the code
-  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
-  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
-  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
-  showstringspaces=false,          % underline spaces within strings only
-  showtabs=false,                  % show tabs within strings adding particular underscores
-  stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
-  stringstyle=\color{mymauve},     % string literal style
-  tabsize=2,                       % sets default tabsize to 2 spaces
-  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+\usemintedstyle{default}
+\setminted{
+  linenos=true,
+  breaklines=true,
+  fontsize=\small,
+  frame=single,
 }
 
 \title{Binary Space Partitions}
@@ -58,7 +31,7 @@
 
 %% Fancy layout
 \pagestyle{fancy}
-\lhead{Binary Space Partitions}
+\lhead{Binary space partitions}
 \chead{}
 \rhead{}
 \lfoot{}
@@ -82,12 +55,13 @@
 \section{Introduction}
 
 This first assignment deals with recursive autopartitioning of a two
-dimensional space. Autopartitions, in contrast to partitions, are
-performed extending the supporting lines of the segments already
-present on the plane.
+dimensional space into a binary tree. Autopartitions, in contrast to
+partitions, are performed extending the supporting lines of the
+segments already present on the plane.
 
-In particular, with partitions in general, we stop executing the
-algorithm when there is
+In particular, with partitions, we stop executing the algorithm when
+there is one segment or object per partition. The autopartition stops
+when no more segments can be extended.
 
 Having direct application in computer graphics, the most interesting
 parameter when considering these partitions in the size of the
@@ -96,7 +70,10 @@ to render first in the scene of a computer screen.
 
 \section{Analysis and expectations}
 
-We define the algorithm RandAutopart in \ref{algo}
+We define the algorithm RandAutopart in algorithm \ref{algo}, where we
+can see that the tree grows every time a line segment intersects
+another segment. The intersected segment is essentially split in two
+and given to the left and right children of that node.
 
 \begin{algorithm}[h]
   \SetAlgoLined
@@ -122,19 +99,33 @@ We define the algorithm RandAutopart in \ref{algo}
 \label{algo}
 \end{algorithm}
 
-The upper bound found in literature \cite{Motwani:1995:RA:211390},
-corresponds to the upper bound of the random algorithm for any
-input. The expectation would be for this boundary to be closer when
-choosing the worst possible input (segment positioning wise) and
-further away when adding randomness to the input and even more when
-giving the the most trivial input possible: parallel segments, in
-which case the number of partitions would be $n+1$.
+We are interested in making this tree as small as possible, to make it
+efficient for other applications (the painter's algorithm, for
+example) to traverse the tree and render the scene as fast as
+possible. The upper bound on the size of the tree we consider is given
+in Eq. \ref{eq:upper-bound}.
 
-The algorithm will be therefore tested with a random input and a
-crafted, ``evil'' input, to try and get close to this upper bound
-without ever exceeding it.
+\begin{equation}
+  \label{eq:upper-bound}
+  n + 2 \sum_u \sum_{i=1}^{n-1} \frac{1}{i+1} \leq n + 2nH_n
+\end{equation}
 
-\section{Implementation}
+This upper bound found in the literature, specifically in
+\cite{Motwani:1995:RA:211390}, corresponds to the upper bound of the
+random algorithm for any input. The expectation would be for this
+boundary to be closer when choosing the worst possible input (segment
+positioning wise) and further away when adding randomness to the input
+and even more when giving the most trivial input possible: parallel
+segments, in which case the number of partitions would be $n+1$.
+
+The algorithm will be therefore tested with random inputs of different
+characteristics too try and see what makes a bad or a good input, in
+order to get closer to this upper bound without ever exceeding it.
+
+\section[Implementation]{Implementation\footnote{Code can be found at
+    \url{https://github.com/carlosgeos/bspace-part}}\footnote{An
+    executable \texttt{.jar} file can be downloaded from
+    \url{https://github.com/carlosgeos/bspace-part/releases}}}
 
 $n$ disjoint segments are generated and placed on a $H\times W$
 canvas, where $H$ is the height and $W$ the width, both in pixels.
@@ -160,24 +151,24 @@ ones some external library could provide. These operations include:
   segment.
 \end{itemize}
 
-Most operations rely of calculating the orientation determinant for
-the line segment defined by two points and a third.
+Most operations rely on calculating the orientation determinant
+between the line segment defined by two points and a third point.
 
 The generated segments' coordinates are integers to begin with and
 Clojure uses a \texttt{Ratio} type to make arithmetic calculations as
-exact as possible at the expense of performance, which is not an
-issue.
+exact as possible and to avoid floating point rounding errors. This
+comes at the expense of performance, which is not an issue.
 
-In addition to this, this implementation tries to handle degenerate
-and special cases as much as possible (colinear segments,
+In addition, this implementation tries to handle degenerate and
+special cases as much as possible (colinear segments,
 segment-on-segment, vertical segments, out-of-bounds segments, segment
-of size 0 - a point, etc).
+of size 0 - points, tangent segments, etc).
 
 For example, for the input shown in figure \ref{fig:sample-input} the
 corresponding partition tree is the following (there are no
 intersections in this case):
 
-\begin{lstlisting}[frame=single]
+\begin{minted}[label=sample-output]{clojure}
 "BSpace partitions"
 {:seg {:a {:x 492, :y 556}, :b {:x 388, :y 932}},
  :left
@@ -194,7 +185,7 @@ intersections in this case):
   {:seg {:a {:x 88, :y 291}, :b {:x 36, :y 79}},
    :left (),
    :right ()}}}
-\end{lstlisting}
+\end{minted}
 
 \begin{figure}[ht!]
   \centering
@@ -203,23 +194,105 @@ intersections in this case):
   \label{fig:sample-input}
 \end{figure}
 
+From the resulting tree, we can count the number of original and newly
+generated segments. The same result could be obtained counting these
+during the execution of the main algorithm, to avoid walking the tree
+once afterwards.
 
 \section{Results}
 
+Table \ref{tab:results} shows a summary of the simulations performed
+on random inputs. Overall, we can see that the size of the tree is
+quite distant from the upper bound.
+
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}[center]{||c|c|c|c|c||}
+    \hline
+    \# of segments & Canvas size (px) & Max segment size (px) & Tree size
+    & Upper bound \\
+    \hline \hline
+    10 & 720x720 & 50 & 12 & 68 \\
+    10 & 720x720 & 50 & 11 & 68 \\
+    10 & 720x720 & 250 & 14 & 68 \\
+    100 & 720x720 & 50 & 132 & 1137 \\
+    100 & 720x720 & 50 & 137 & 1137 \\
+    100 & 720x720 & 250 & 221 & 1137 \\
+    1000 & 720x720 & 50 & 2213 & 15970 \\
+    1000 & 720x720 & 50 & 2262 & 15970 \\
+    1000 & 720x720 & 250 & 2808 & 15970 \\
+    2000 & 720x720 & 50 & 5179 & 34713 \\
+    2000 & 720x720 & 5 & 2395 & 34713 \\
+    2000 & 720x720 & 250 & 6710 & 34713 \\
+    5000 & 720x720 & 250 & 16227 & 95945 \\
+    10000 & 720x720 & 3 & 12698 & 205752 \\
+    \hline
+  \end{tabular}
+  \caption{Simulation results}
+  \label{tab:results}
+\end{table}
+
+One can appreciate that making the segment length very small (3 or 5
+pixels, such as in fig. \ref{fig:sparse-input} and
+fig. \ref{fig:sparse-input2}), makes the difference between the size
+of the tree and the upper bound grow. This is due to the extended
+lines cutting very few segments in the sparse region.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[width=0.7\textwidth]{img/sparse-input.png}
+  \caption{Sparse segments. n = 2000}
+  \label{fig:sparse-input}
+\end{figure}
+
+Another observation is that taking half the segment length affects the
+same way the size of the tree as doubling the parameters
+\texttt{WIDTH} and \texttt{HEIGHT} of the canvas, which is logical.
+
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[width=0.7\textwidth]{img/sparse-input10000.png}
+  \caption{Sparse segments. n = 10000}
+  \label{fig:sparse-input2}
+\end{figure}
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[width=0.7\textwidth]{img/bad-input2000.png}
+  \caption{``Bad'' input. n = 2000}
+  \label{fig:bad-input}
+\end{figure}
+
+One of the worst inputs that could be found is shown in
+fig. \ref{fig:bad-input}, although the size of the tree stays well
+below the threshold. The approach to design the worst input possible
+would be to make the algorithm choose a ``bad'' segment every time. A
+``bad'' segment intersects with all or most other segments in its
+region, splitting them and generating subsegments, more partitions and
+incrementing the tree size. But the strength of the algorithm is
+precisely that we do not know which segment is going to pick next,
+hence the power of randomisation.
+
 \section{Conclusion}
 
-% \begin{figure}[ht!]
-%   \centering
-%   \includegraphics[width=1\textwidth]{some_graphic.png}
-%   \caption{}
-%   \label{fig:fig1}
-% \end{figure}
+The simulations stay below the upper bound given in
+Eq. \ref{eq:upper-bound}, as expected, and it does so regardless of
+what the input is, since that result was obtained with respect to the
+randomness of the algorithm and not the structuredness (or lack of it)
+of the input.
+
+If we could place the segments in the space in such a way that the
+algorithm would have no choice but to pick a bad segment at each
+iteration, thereby ``defeating'' the algorithm, we would see the tree
+size get closer to the upper bound.
 
 \appendix
 \section{Appendix - code listing}
 
-\begin{minted}{clojure}
-\end{minted}
+\inputminted[label=common.clj]{clojure}{../src/bspace_part/common.clj}
+\inputminted[label=geometry.clj]{clojure}{../src/bspace_part/geometry.clj}
+\inputminted[label=core.clj]{clojure}{../src/bspace_part/core.clj}
 
 \nocite{*}
 \bibliographystyle{plain}

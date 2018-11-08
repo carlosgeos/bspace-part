@@ -6,19 +6,18 @@
             [quil.core :as q]
             [quil.middleware :as m]))
 
-(def segments (disjoint_segments 200))
+(def segments (disjoint_segments n))
 
-(defn setup []
+
+(defn setup
+  "Drawing function to get an idea of what the generated segments look like"
+  []
   (q/frame-rate 60)
   (q/background 250)
   (q/fill 0)
 
   (doseq [seg segments]
     (let [[x1 y1 x2 y2] (list_of_points seg)]
-      ;; (q/ellipse x1 y1 5 5)
-      ;; (q/ellipse x2 y2 5 5)
-      ;; (q/text (str "(" x1 ", " y1 ")") (+ 5 x1) (+ 5 y1))
-      ;; (q/text (str "(" x2 ", " y2 ")") (+ 5 x2) (+ 5 y2))
       (q/line x1 y1 x2 y2))))
 
 
@@ -41,6 +40,7 @@
                    (remove nil? ,,,)
                    (randauto ,,,))})))
 
+
 (q/defsketch bsp-sketch
   :title "Binary Space Partitions"
   :settings #(q/smooth 2)
@@ -49,6 +49,21 @@
   :size [WIDTH HEIGHT])
 
 
+(defn tree_size
+  "Function given to reduce-kv to count the number of segments by
+  exploring the tree (a key-value hashap) depth-first, adding +1 to
+  the reduce accumulator whenever we encounter a segment in the
+  space (a partition)"
+  [already key value]
+  (if (and (map? value)
+           (contains? value :seg))
+    (reduce-kv tree_size (inc already) value)
+    already))
+
 (defn -main []
-  (prn "BSpace partitions")
-  (pp/pprint (randauto segments)))
+  (println "Canvas size: " WIDTH "x" HEIGHT)
+  (println "Max segment length:" MAX_SEGMENT_LENGTH)
+  (println "Tree size: ")
+
+  (let [tree (randauto segments)]
+    (prn (tree_size 0 :root tree))))
